@@ -5,7 +5,7 @@ from moisture_reading import MoistureReading
 
 class ElasticMoistureDb:
     def __init__(self):
-        self._es = Elasticsearch()
+        self._es = Elasticsearch(["elasticsearch"])
         self._index = "test-index4"
 
     def create_index(self):
@@ -28,7 +28,6 @@ class ElasticMoistureDb:
         return created
 
     def get_readings(self, datetime_start=None, datetime_end=None):
-        print(datetime_start)
         start_str = "1900-01-01"
         end_str = "2100-01-01"
         start_str = (
