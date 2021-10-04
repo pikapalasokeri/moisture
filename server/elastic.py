@@ -4,9 +4,12 @@ from moisture_reading import MoistureReading
 
 
 class ElasticMoistureDb:
-    def __init__(self):
-        self._es = Elasticsearch(["elasticsearch"])
-        self._index = "test-index4"
+    def __init__(self, local=False):
+        if local:
+            self._es = Elasticsearch()
+        else:
+            self._es = Elasticsearch(["elasticsearch"])
+        self._index = "test-index6"
 
     def create_index(self):
         settings = {
@@ -15,6 +18,7 @@ class ElasticMoistureDb:
                     "sensor_type": {"type": "keyword"},  # Or text?
                     "timestamp": {"type": "date"},
                     "sensor_id": {"type": "keyword"},
+                    "location": {"type": "keyword"},
                     "raw_value": {"type": "integer"},
                 }
             }
@@ -62,22 +66,41 @@ class ElasticMoistureDb:
             "timestamp",
             "raw_value",
             "sensor_id",
+            "location",
         ]
         res = self._es.search(index=self._index, query=query, fields=fields, size=1000)
         return [MoistureReading.fromElastic(h["fields"]) for h in res["hits"]["hits"]]
 
-    def get_sensors(self):
-        aggs = {"sensor_ids": {"terms": {"field": "sensor_id", "size": 500}}}
-        es = Elasticsearch()
-        res = self._es.search(index=self._index, aggs=aggs, size=0)
-        return sorted([b["key"] for b in res["aggregations"]["sensor_ids"]["buckets"]])
 
-    def add_reading(self, raw_value, sensor_id, datetime_utc):
+    def get_sensors(self, location=None):
+        es = Elasticsearch()
+        agg1 = {"sensor_ids": {"terms": {"field": "sensor_id", "size": 500}}}
+        if location is not None:
+            filter1 = {"term": {"location": location}}
+        else:
+            filter1 = {"match_all": {}}
+        aggs = {"sensor_ids": {"filter": filter1, "aggs": agg1}}
+        res = self._es.search(index=self._index, aggs=aggs, size=0)
+        return sorted(
+            [
+                b["key"]
+                for b in res["aggregations"]["sensor_ids"]["sensor_ids"]["buckets"]
+            ]
+        )
+
+    def get_locations(self):
+        es = Elasticsearch()
+        aggs = {"locations": {"terms": {"field": "location", "size": 500}}}
+        res = self._es.search(index=self._index, aggs=aggs, size=0)
+        return sorted([b["key"] for b in res["aggregations"]["locations"]["buckets"]])
+
+    def add_reading(self, raw_value, sensor_id, location, datetime_utc):
         es = Elasticsearch()
 
         doc = {
             "sensor_type": "moisture",
             "sensor_id": sensor_id,
+            "location": location,
             "raw_value": raw_value,
             "timestamp": datetime_utc,
         }
