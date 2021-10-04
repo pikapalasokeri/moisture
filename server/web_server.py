@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from flask import Flask, Response
+from flask import Flask, Response, make_response
 import io
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 import elastic, time_utils, plot_generation
@@ -19,17 +19,22 @@ def plot_png():
         output = io.BytesIO()
         FigureCanvas(fig).print_png(output)
         return Response(output.getvalue(), mimetype="image/png")
-    except e:
-        return "Error"
+    except Exception as e:
+        print(e)
     return "Wtf?"
 
 
 @app.route("/")
 def index():
-    return '<img src="/plot.png" alt="Moisture readings">'
+    html = '<img src="/plot.png" alt="Moisture readings">'
+    response = make_response(html)
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    return response
 
 
 if __name__ == "__main__":
     from waitress import serve
 
+    print("Starting web server...")
     serve(app, host="0.0.0.0", port=8080)
