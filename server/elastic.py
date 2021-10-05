@@ -95,8 +95,6 @@ class ElasticMoistureDb:
         return sorted([b["key"] for b in res["aggregations"]["locations"]["buckets"]])
 
     def add_reading(self, raw_value, sensor_id, location, datetime_utc):
-        es = Elasticsearch()
-
         doc = {
             "sensor_type": "moisture",
             "sensor_id": sensor_id,
