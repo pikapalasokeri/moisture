@@ -2,4 +2,4 @@ syntax: glob
 *~
 *.pyc
 *.pytest_cache
-esp/moisture_sensor/build
+esp32/moisture_sensor/build
