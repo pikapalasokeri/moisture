@@ -17,4 +17,5 @@ app_main(void)
   ESP_ERROR_CHECK(ret);
 
   wifi_sta_init();
+  wifi_sta_deinit();
 }
