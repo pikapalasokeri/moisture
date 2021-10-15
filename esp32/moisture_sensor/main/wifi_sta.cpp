@@ -10,17 +10,10 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
 
+#include "networks.h"
+
 namespace
 {
-/* The examples use WiFi configuration that you can set via project
- configuration menu
-
- If you'd rather not, just change the below entries to strings with
- the config you want - ie #define EXAMPLE_WIFI_SSID "mywifissid"
-*/
-#define EXAMPLE_ESP_WIFI_SSID CONFIG_ESP_WIFI_SSID
-#define EXAMPLE_ESP_WIFI_PASS CONFIG_ESP_WIFI_PASSWORD
-#define EXAMPLE_ESP_MAXIMUM_RETRY CONFIG_ESP_MAXIMUM_RETRY
 
 /* FreeRTOS event group to signal when we are connected*/
 EventGroupHandle_t s_wifi_event_group;
@@ -35,8 +28,10 @@ EventGroupHandle_t s_wifi_event_group;
 
 const char* TAG = "wifi_sta";
 
+int s_connected_network_ix = -1;
 int s_retry_num = 0;
 bool s_should_disconnect = false;
+constexpr int s_max_retries = 1;
 
 esp_event_handler_instance_t s_instance_any_id;
 esp_event_handler_instance_t s_instance_got_ip;
@@ -53,16 +48,17 @@ event_handler(void* arg,
   }
   else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED)
   {
+    ESP_LOGI(TAG, "got wifi event sta_disconnected. s_retry_num: %d", s_retry_num);
     if (s_should_disconnect)
     {
       xEventGroupClearBits(s_wifi_event_group, 0xFF);
       xEventGroupSetBits(s_wifi_event_group, WIFI_SUCCESSFUL_DISCONNECT_BIT);
       ESP_LOGI(TAG, "disconnect to the AP by choice");
     }
-    else if (s_retry_num < EXAMPLE_ESP_MAXIMUM_RETRY)
+    else if (s_retry_num < s_max_retries)
     {
       esp_wifi_connect();
-      s_retry_num++;
+      ++s_retry_num;
       ESP_LOGI(TAG, "retry to connect to the AP");
     }
     else
@@ -81,34 +77,19 @@ event_handler(void* arg,
     xEventGroupSetBits(s_wifi_event_group, WIFI_CONNECTED_BIT);
   }
 }
-} // namespace
-
-bool
-is_connected()
-{
-  EventBits_t bits = xEventGroupGetBits(s_wifi_event_group);
-
-  return (bits & WIFI_CONNECTED_BIT);
-}
 
 void
-wifi_sta_init()
+wifi_reset()
 {
+  xEventGroupClearBits(s_wifi_event_group, 0xFF);
   s_should_disconnect = false;
-  s_wifi_event_group = xEventGroupCreate();
+  s_retry_num = 0;
+}
 
-  ESP_ERROR_CHECK(esp_netif_init());
-
-  ESP_ERROR_CHECK(esp_event_loop_create_default());
-  esp_netif_create_default_wifi_sta();
-
-  wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
-  ESP_ERROR_CHECK(esp_wifi_init(&cfg));
-
-  ESP_ERROR_CHECK(esp_event_handler_instance_register(
-    WIFI_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL, &s_instance_any_id));
-  ESP_ERROR_CHECK(esp_event_handler_instance_register(
-    IP_EVENT, IP_EVENT_STA_GOT_IP, &event_handler, NULL, &s_instance_got_ip));
+bool
+wifi_sta_init(int const network_ix)
+{
+  wifi_reset();
 
   wifi_pmf_config_t pmf_cfg;
   pmf_cfg.capable = true;
@@ -117,10 +98,12 @@ wifi_sta_init()
   wifi_sta_config_t sta;
   std::memset(&sta, 0, sizeof(sta));
 
+  char const * const ssid{networks_ssid[network_ix]};
+  char const * const pass{networks_pass[network_ix]};
   std::sprintf(
-    reinterpret_cast<char*>(&sta.ssid[0]), "%s", EXAMPLE_ESP_WIFI_SSID);
+    reinterpret_cast<char*>(&sta.ssid[0]), "%s", ssid);
   std::sprintf(
-    reinterpret_cast<char*>(&sta.password[0]), "%s", EXAMPLE_ESP_WIFI_PASS);
+    reinterpret_cast<char*>(&sta.password[0]), "%s", pass);
   sta.threshold.authmode = WIFI_AUTH_WPA2_PSK;
   sta.pmf_cfg = pmf_cfg;
 
@@ -144,26 +127,67 @@ wifi_sta_init()
   /* xEventGroupWaitBits() returns the bits before the call returned, hence we
    * can test which event actually happened. */
 
+  bool ret{false};
   if (bits & WIFI_CONNECTED_BIT)
   {
+    s_connected_network_ix = network_ix;
+    ret = true;
     ESP_LOGI(TAG,
              "connected to ap SSID:%s password:%s",
-             EXAMPLE_ESP_WIFI_SSID,
-             EXAMPLE_ESP_WIFI_PASS);
+             ssid,
+             pass);
   }
   else if (bits & WIFI_FAIL_BIT)
   {
     ESP_LOGI(TAG,
              "Failed to connect to SSID:%s, password:%s",
-             EXAMPLE_ESP_WIFI_SSID,
-             EXAMPLE_ESP_WIFI_PASS);
+             ssid,
+             pass);
   }
   else
   {
     ESP_LOGE(TAG, "UNEXPECTED EVENT");
   }
 
-  /* The event will not be processed after unregister */
+  return ret;
+}
+} // namespace
+
+bool
+is_connected()
+{
+  EventBits_t bits = xEventGroupGetBits(s_wifi_event_group);
+
+  return (bits & WIFI_CONNECTED_BIT);
+}
+
+void
+wifi_sta_init()
+{
+  s_wifi_event_group = xEventGroupCreate();
+
+  ESP_ERROR_CHECK(esp_netif_init());
+
+  ESP_ERROR_CHECK(esp_event_loop_create_default());
+  esp_netif_create_default_wifi_sta();
+
+  wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+  ESP_ERROR_CHECK(esp_wifi_init(&cfg));
+
+  ESP_ERROR_CHECK(esp_event_handler_instance_register(
+    WIFI_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL, &s_instance_any_id));
+  ESP_ERROR_CHECK(esp_event_handler_instance_register(
+    IP_EVENT, IP_EVENT_STA_GOT_IP, &event_handler, NULL, &s_instance_got_ip));
+
+  for (int i = 0; i < networks_n; ++i)
+  {
+    ESP_LOGI(TAG, "Will try connect to %s", networks_ssid[i]);
+    if (wifi_sta_init(i))
+    {
+      break;
+    }
+    esp_wifi_stop();
+  }
 }
 
 void
