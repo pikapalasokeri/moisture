@@ -1,8 +1,12 @@
+#include "esp_log.h"
 #include "nvs_flash.h"
 
 #include "lwip/err.h"
 
+#include "capacitance_reader.h"
 #include "wifi_sta.h"
+
+const char* TAG = "main";
 
 extern "C" void
 app_main(void)
@@ -16,6 +20,21 @@ app_main(void)
   }
   ESP_ERROR_CHECK(ret);
 
+  // read analog values.
+
+  CapacitanceReader cap_reader{2};
+
+  for (int i = 0; i < 10; ++i)
+  {
+    std::vector<std::uint32_t> const readings{cap_reader.get_readings()};
+
+    for (auto v : readings)
+    {
+      ESP_LOGI(TAG, "reading: %d", v);
+    }
+  }
+
   wifi_sta_init();
+  //upload analog values.
   wifi_sta_deinit();
 }
