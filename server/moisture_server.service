@@ -1,0 +1,17 @@
+[Unit]
+Description=MoistureServerService
+After=network.target
+After=systemd-user-sessions.service
+After=network-online.target
+
+[Service]
+User=moisture_man
+ExecStart=/bin/sh -c "cd /home/moisture_man/moisture_server && ./up.sh"
+TimeoutSec=30
+Restart=always
+RestartSec=30
+StartLimitInterval=0
+StartLimitBurst=10
+
+[Install]
+WantedBy=multi-user.target
