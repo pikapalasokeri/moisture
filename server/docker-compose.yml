@@ -15,6 +15,13 @@ services:
     image: web_server:latest
     container_name: web_server
     ports:
+      - 80:80
+    restart: unless-stopped
+
+  data_receiver:
+    image: data_receiver:latest
+    container_name: data_receiver
+    ports:
       - 8080:8080
     restart: unless-stopped
 

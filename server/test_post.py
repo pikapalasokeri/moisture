@@ -7,7 +7,7 @@ data = {"location": "spenat",
         "sensor_type": "moisture",
         "hash": 0}
 
-url = "http://127.0.0.1:8081/new_moisture_reading"
+url = "http://127.0.0.1:8080/new_moisture_reading"
 
 headers = {"Content-Type": "application/json; charset=utf-8"}
 

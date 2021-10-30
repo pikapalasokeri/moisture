@@ -42,13 +42,14 @@ def index():
 
     if is_valid(request_data):
         print("Request is valid")
-        es = elastic.ElasticMoistureDb(True)
+        es = elastic.ElasticMoistureDb()
         es.add_reading(
             request_data["raw_value"],
             request_data["sensor_id"],
             request_data["location"],
             time_utils.now_utc(),
         )
+        print("Successfully added reading from:", request_data)
 
     return {"result": "success"}
 
@@ -56,4 +57,5 @@ def index():
 if __name__ == "__main__":
     from waitress import serve
 
-    serve(app, host="0.0.0.0", port=8081)
+    print("Serving data receiver...")
+    serve(app, host="0.0.0.0", port=8080)

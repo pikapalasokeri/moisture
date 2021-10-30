@@ -14,6 +14,7 @@ def generate_plot(es, start_datetime, end_datetime):
     readings = es.get_readings(start_datetime, end_datetime)
 
     locations = es.get_locations()
+    print("Got locations:", locations)
     for location in locations:
         sensors = es.get_sensors(location)
         series = {sensor_id: ([], []) for sensor_id in sensors}
@@ -26,6 +27,7 @@ def generate_plot(es, start_datetime, end_datetime):
         for sensor_id, serie in series.items():
             timestamps, values = zip(*sorted(zip(serie[0], serie[1])))
             plt.plot(timestamps, values, ".-", label=f"{location}/{sensor_id}")
+            print("Plotted serie:", sensor_id)
 
     formatter = mdates.DateFormatter(
         "%Y-%m-%d %H:%M", tz=pytz.timezone("Europe/Stockholm")

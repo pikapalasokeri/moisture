@@ -9,7 +9,7 @@ class ElasticMoistureDb:
             self._es = Elasticsearch()
         else:
             self._es = Elasticsearch(["elasticsearch"])
-        self._index = "test-index6"
+        self._index = "test-index7"
 
     def create_index(self):
         settings = {
