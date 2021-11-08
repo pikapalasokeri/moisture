@@ -3,4 +3,4 @@ syntax: glob
 *.pyc
 *.pytest_cache
 esp32/moisture_sensor/build
-esp32/moisture_sensor/networks.h
+esp32/moisture_sensor/main/networks.h
