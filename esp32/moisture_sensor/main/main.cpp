@@ -4,6 +4,7 @@
 #include "lwip/err.h"
 
 #include "capacitance_reader.h"
+#include "pwm_controller.h"
 #include "wifi_sta.h"
 
 const char* TAG = "main";
@@ -23,7 +24,9 @@ app_main(void)
   // read analog values.
 
   CapacitanceReader cap_reader{2};
+  PwmController pwm_controller{2};
 
+  pwm_controller.start();
   for (int i = 0; i < 10; ++i)
   {
     std::vector<std::uint32_t> const readings{cap_reader.get_readings()};
@@ -33,6 +36,7 @@ app_main(void)
       ESP_LOGI(TAG, "reading: %d", v);
     }
   }
+  pwm_controller.stop();
 
   wifi_sta_init();
   //upload analog values.
