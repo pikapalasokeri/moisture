@@ -53,6 +53,25 @@ PwmController::PwmController(int const num_sensors)
   }
 }
 
+PwmController::ScopedActivation
+PwmController::getScopedActivity()
+{
+  return ScopedActivation{this, PrivateCreationTag()};
+}
+
+PwmController::ScopedActivation::ScopedActivation(PwmController* pwm_controller,
+                                                  PrivateCreationTag tag)
+  : pwm_controller_{pwm_controller}
+{
+  static_cast<void>(tag);
+  pwm_controller_->start();
+}
+
+PwmController::ScopedActivation::~ScopedActivation()
+{
+  pwm_controller_->stop();
+}
+
 void
 PwmController::start()
 {

@@ -70,6 +70,7 @@ print_char_val_type(esp_adc_cal_value_t val_type)
 
 CapacitanceReader::CapacitanceReader(int const num_sensors)
   : num_sensors_{num_sensors}
+  , pwm_controller_{num_sensors_}
 {
   assert(num_sensors_ >= 0);
   assert(num_sensors_ <= s_channels.size());
@@ -90,8 +91,12 @@ CapacitanceReader::CapacitanceReader(int const num_sensors)
 }
 
 std::vector<std::uint32_t>
-CapacitanceReader::get_readings() const
+CapacitanceReader::get_readings()
 {
+  auto activity{pwm_controller_.getScopedActivity()};
+
+  // pause a few seconds.
+
   std::vector<std::uint32_t> result(num_sensors_, 0U);
 
   for (int sensor_ix = 0; sensor_ix < num_sensors_; ++sensor_ix)
