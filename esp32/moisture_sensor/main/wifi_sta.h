@@ -2,12 +2,12 @@
 #define WIFI_STA_H
 
 bool
-is_connected();
+isConnected();
 
 void
-wifi_sta_init();
+wifiStaInit();
 
 void
-wifi_sta_deinit();
+wifiStaDeinit();
 
 #endif  // WIFI_STA_H

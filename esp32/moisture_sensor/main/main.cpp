@@ -34,7 +34,7 @@ app_main(void)
     }
   }
 
-  wifi_sta_init();
+  wifiStaInit();
   //upload analog values.
-  wifi_sta_deinit();
+  wifiStaDeinit();
 }

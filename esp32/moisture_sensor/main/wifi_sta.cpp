@@ -37,7 +37,7 @@ esp_event_handler_instance_t s_instance_any_id;
 esp_event_handler_instance_t s_instance_got_ip;
 
 void
-event_handler(void* arg,
+eventHandler(void* arg,
               esp_event_base_t event_base,
               int32_t event_id,
               void* event_data)
@@ -79,7 +79,7 @@ event_handler(void* arg,
 }
 
 void
-wifi_reset()
+wifiReset()
 {
   xEventGroupClearBits(s_wifi_event_group, 0xFF);
   s_should_disconnect = false;
@@ -87,9 +87,9 @@ wifi_reset()
 }
 
 bool
-wifi_sta_init(int const network_ix)
+wifiStaInit(int const network_ix)
 {
-  wifi_reset();
+  wifiReset();
 
   wifi_pmf_config_t pmf_cfg;
   pmf_cfg.capable = true;
@@ -154,7 +154,7 @@ wifi_sta_init(int const network_ix)
 } // namespace
 
 bool
-is_connected()
+isConnected()
 {
   EventBits_t bits = xEventGroupGetBits(s_wifi_event_group);
 
@@ -162,7 +162,7 @@ is_connected()
 }
 
 void
-wifi_sta_init()
+wifiStaInit()
 {
   s_wifi_event_group = xEventGroupCreate();
 
@@ -175,14 +175,14 @@ wifi_sta_init()
   ESP_ERROR_CHECK(esp_wifi_init(&cfg));
 
   ESP_ERROR_CHECK(esp_event_handler_instance_register(
-    WIFI_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL, &s_instance_any_id));
+    WIFI_EVENT, ESP_EVENT_ANY_ID, &eventHandler, NULL, &s_instance_any_id));
   ESP_ERROR_CHECK(esp_event_handler_instance_register(
-    IP_EVENT, IP_EVENT_STA_GOT_IP, &event_handler, NULL, &s_instance_got_ip));
+    IP_EVENT, IP_EVENT_STA_GOT_IP, &eventHandler, NULL, &s_instance_got_ip));
 
   for (int i = 0; i < networks_n; ++i)
   {
     ESP_LOGI(TAG, "Will try connect to %s", networks_ssid[i]);
-    if (wifi_sta_init(i))
+    if (wifiStaInit(i))
     {
       break;
     }
@@ -191,9 +191,9 @@ wifi_sta_init()
 }
 
 void
-wifi_sta_deinit()
+wifiStaDeinit()
 {
-  if (is_connected())
+  if (isConnected())
   {
     s_should_disconnect = true;
     if (esp_wifi_disconnect() == ESP_OK)
