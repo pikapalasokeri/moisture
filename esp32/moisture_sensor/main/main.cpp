@@ -4,6 +4,7 @@
 #include "lwip/err.h"
 
 #include "capacitance_reader.h"
+#include "post_http.h"
 #include "wifi_sta.h"
 
 const char* TAG = "main";
@@ -20,21 +21,17 @@ app_main(void)
   }
   ESP_ERROR_CHECK(ret);
 
-  // read analog values.
 
   CapacitanceReader cap_reader{2};
-
-  for (int i = 0; i < 10; ++i)
-  {
-    std::vector<std::uint32_t> const readings{cap_reader.getReadings()};
-
-    for (auto v : readings)
-    {
-      ESP_LOGI(TAG, "reading: %d", v);
-    }
-  }
+  std::vector<std::uint32_t> const values{cap_reader.getReadings()};
 
   wifiStaInit();
-  //upload analog values.
+
+  for (int i = 0; i < values.size(); ++i)
+  {
+    auto const v{values[i]};
+    post_http(v, i, wifiGetSSID());
+  }
+
   wifiStaDeinit();
 }

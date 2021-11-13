@@ -38,9 +38,9 @@ esp_event_handler_instance_t s_instance_got_ip;
 
 void
 eventHandler(void* arg,
-              esp_event_base_t event_base,
-              int32_t event_id,
-              void* event_data)
+             esp_event_base_t event_base,
+             int32_t event_id,
+             void* event_data)
 {
   if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START)
   {
@@ -48,7 +48,8 @@ eventHandler(void* arg,
   }
   else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED)
   {
-    ESP_LOGI(TAG, "got wifi event sta_disconnected. s_retry_num: %d", s_retry_num);
+    ESP_LOGI(
+      TAG, "got wifi event sta_disconnected. s_retry_num: %d", s_retry_num);
     if (s_should_disconnect)
     {
       xEventGroupClearBits(s_wifi_event_group, 0xFF);
@@ -98,12 +99,10 @@ wifiStaInit(int const network_ix)
   wifi_sta_config_t sta;
   std::memset(&sta, 0, sizeof(sta));
 
-  char const * const ssid{networks_ssid[network_ix]};
-  char const * const pass{networks_pass[network_ix]};
-  std::sprintf(
-    reinterpret_cast<char*>(&sta.ssid[0]), "%s", ssid);
-  std::sprintf(
-    reinterpret_cast<char*>(&sta.password[0]), "%s", pass);
+  char const* const ssid{networks_ssid[network_ix]};
+  char const* const pass{networks_pass[network_ix]};
+  std::sprintf(reinterpret_cast<char*>(&sta.ssid[0]), "%s", ssid);
+  std::sprintf(reinterpret_cast<char*>(&sta.password[0]), "%s", pass);
   sta.threshold.authmode = WIFI_AUTH_WPA2_PSK;
   sta.pmf_cfg = pmf_cfg;
 
@@ -132,17 +131,11 @@ wifiStaInit(int const network_ix)
   {
     s_connected_network_ix = network_ix;
     ret = true;
-    ESP_LOGI(TAG,
-             "connected to ap SSID:%s password:%s",
-             ssid,
-             pass);
+    ESP_LOGI(TAG, "connected to ap SSID:%s password:%s", ssid, pass);
   }
   else if (bits & WIFI_FAIL_BIT)
   {
-    ESP_LOGI(TAG,
-             "Failed to connect to SSID:%s, password:%s",
-             ssid,
-             pass);
+    ESP_LOGI(TAG, "Failed to connect to SSID:%s, password:%s", ssid, pass);
   }
   else
   {
@@ -215,4 +208,15 @@ wifiStaDeinit()
       }
     }
   }
+}
+
+std::string
+wifiGetSSID()
+{
+  std::string ret{"NO SSID"};
+  if (isConnected() && s_connected_network_ix >= 0)
+  {
+    ret = networks_ssid[s_connected_network_ix];
+  }
+  return ret;
 }

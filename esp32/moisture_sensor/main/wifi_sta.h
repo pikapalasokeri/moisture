@@ -1,6 +1,8 @@
 #ifndef WIFI_STA_H
 #define WIFI_STA_H
 
+#include <string>
+
 bool
 isConnected();
 
@@ -10,4 +12,7 @@ wifiStaInit();
 void
 wifiStaDeinit();
 
-#endif  // WIFI_STA_H
+std::string
+wifiGetSSID();
+
+#endif // WIFI_STA_H
