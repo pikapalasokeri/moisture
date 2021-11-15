@@ -1,4 +1,5 @@
 #include "esp_log.h"
+#include "esp_sleep.h"
 #include "nvs_flash.h"
 
 #include "lwip/err.h"
@@ -34,4 +35,8 @@ app_main(void)
   }
 
   wifiStaDeinit();
+
+  constexpr int deep_sleep_sec = 3600;
+  ESP_LOGI(TAG, "Entering deep sleep for %d seconds", deep_sleep_sec);
+  esp_deep_sleep(1000000LL * deep_sleep_sec);
 }
