@@ -23,7 +23,7 @@ def is_valid(req):
         return False
 
     # 01:02:03:04:05:06
-    if len(req["sensor_id"]) > 17:
+    if len(req["sensor_id"]) > 24:
         return False
 
     if len(req["location"]) > 40:
