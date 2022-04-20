@@ -3,7 +3,7 @@
 
 #include "driver/ledc.h"
 
-#include <array>
+#include <vector>
 
 class PwmController
 {
@@ -23,7 +23,7 @@ public:
 
   static constexpr int MAX_CHANNELS{2};
 
-  PwmController(int const num_sensors);
+  PwmController(std::vector<int> const& gpio_pins);
 
   ScopedActivation getScopedActivity();
 
@@ -31,10 +31,8 @@ private:
   void start();
   void stop();
 
-  int const num_sensors_;
-
-  std::array<ledc_channel_config_t, MAX_CHANNELS> start_channel_configs_;
-  std::array<ledc_channel_config_t, MAX_CHANNELS> stop_channel_configs_;
+  std::vector<ledc_channel_config_t> start_channel_configs_;
+  std::vector<ledc_channel_config_t> stop_channel_configs_;
 };
 
 #endif // PWM_CONTROLLER_H

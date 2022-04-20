@@ -6,20 +6,27 @@
 #include <cstdint>
 #include <vector>
 
-// Pin mapping:
-// AdcReader |
-//  channel  | GPIO pin
-//        0  |  34
-//        1  |  35
+
+enum class AdcGpioPin
+{
+  GPIO32 = 0,
+  GPIO33,
+  GPIO34,
+  GPIO35,
+  GPIO36,
+  GPIO37,
+  GPIO38,
+  GPIO39
+};
+
 class AdcReader
 {
 public:
-  static constexpr size_t MAX_CHANNELS{2};
-  AdcReader(int const num_channels);
+  AdcReader(std::vector<AdcGpioPin> const& input_pins);
   std::vector<std::uint32_t> getReadings(int const num_avg_samples);
 
 private:
-  int num_channels_;
+  std::vector<adc1_channel_t> const channels_;
   esp_adc_cal_characteristics_t adc_characteristics_;
 };
 

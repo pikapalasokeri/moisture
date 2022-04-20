@@ -2,22 +2,20 @@
 
 #include "esp_err.h"
 
+#include <array>
 #include <cassert>
 #include <cstring>
 
 namespace
 {
-constexpr std::array<int, PwmController::MAX_CHANNELS> s_gpio_pins{3, 21};
 constexpr std::array<ledc_channel_t, PwmController::MAX_CHANNELS> s_channels{
   LEDC_CHANNEL_0,
   LEDC_CHANNEL_1};
 } // namespace
 
-PwmController::PwmController(int const num_sensors)
-  : num_sensors_{num_sensors}
+PwmController::PwmController(std::vector<int> const& gpio_pins)
 {
-  assert(num_sensors_ >= 0);
-  assert(num_sensors_ <= MAX_CHANNELS);
+  assert(gpio_pins.size() <= MAX_CHANNELS);
 
   ledc_timer_config_t ledc_timer;
   std::memset(&ledc_timer, 0, sizeof(ledc_timer));
@@ -32,13 +30,13 @@ PwmController::PwmController(int const num_sensors)
     printf("Unable to config ledc timer: %d.", err);
   }
 
-  for (int i = 0; i < MAX_CHANNELS; ++i)
+  for (std::size_t i = 0; i < gpio_pins.size(); ++i)
   {
     ledc_channel_config_t basic_config;
     std::memset(&basic_config, 0, sizeof(basic_config));
     basic_config.channel = s_channels[i];
     basic_config.duty = 0;
-    basic_config.gpio_num = s_gpio_pins[i];
+    basic_config.gpio_num = gpio_pins[i];
     basic_config.speed_mode = LEDC_LOW_SPEED_MODE;
     basic_config.hpoint = 0;
     basic_config.timer_sel = LEDC_TIMER_1;
@@ -48,8 +46,8 @@ PwmController::PwmController(int const num_sensors)
     ledc_channel_config_t stop_config{basic_config};
     stop_config.duty = 0;
 
-    start_channel_configs_[i] = start_config;
-    stop_channel_configs_[i] = stop_config;
+    start_channel_configs_.push_back(start_config);
+    stop_channel_configs_.push_back(stop_config);
   }
 }
 
@@ -75,7 +73,7 @@ PwmController::ScopedActivation::~ScopedActivation()
 void
 PwmController::start()
 {
-  for (int i = 0; i < num_sensors_; ++i)
+  for (std::size_t i = 0; i < start_channel_configs_.size(); ++i)
   {
     esp_err_t const err{ledc_channel_config(&start_channel_configs_[i])};
     if (err != ESP_OK)
@@ -88,7 +86,7 @@ PwmController::start()
 void
 PwmController::stop()
 {
-  for (int i = 0; i < num_sensors_; ++i)
+  for (std::size_t i = 0; i < stop_channel_configs_.size(); ++i)
   {
     esp_err_t const err{ledc_channel_config(&stop_channel_configs_[i])};
     if (err != ESP_OK)

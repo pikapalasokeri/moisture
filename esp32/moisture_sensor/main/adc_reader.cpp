@@ -19,9 +19,33 @@ namespace
 //  ADC1_CHANNEL_6,     /*!< ADC1 channel 6 is GPIO34 */
 //  ADC1_CHANNEL_7,     /*!< ADC1 channel 7 is GPIO35 */
 
-constexpr std::array<adc1_channel_t, AdcReader::MAX_CHANNELS> s_channels{
-  ADC1_CHANNEL_6,  // GPIO34
-  ADC1_CHANNEL_7}; // GPIO35
+adc1_channel_t
+gpio_to_adc1_channel(AdcGpioPin const pin)
+{
+  static constexpr std::array<adc1_channel_t, 8> gpio_to_adc_channel_map{
+    ADC1_CHANNEL_4,
+    ADC1_CHANNEL_5,
+    ADC1_CHANNEL_6,
+    ADC1_CHANNEL_7,
+    ADC1_CHANNEL_0,
+    ADC1_CHANNEL_1,
+    ADC1_CHANNEL_2,
+    ADC1_CHANNEL_3,
+  };
+  return gpio_to_adc_channel_map[static_cast<std::size_t>(pin)];
+}
+
+std::vector<adc1_channel_t>
+pins_to_channels(std::vector<AdcGpioPin> const& pins)
+{
+  std::vector<adc1_channel_t> result;
+  for (auto const pin : pins)
+  {
+    result.push_back(gpio_to_adc1_channel(pin));
+  }
+  return result;
+}
+
 constexpr adc_bits_width_t width = ADC_WIDTH_BIT_12;
 constexpr adc_atten_t atten = ADC_ATTEN_DB_0;
 constexpr adc_unit_t unit = ADC_UNIT_1;
@@ -67,17 +91,13 @@ print_char_val_type(esp_adc_cal_value_t val_type)
 }
 } // namespace
 
-AdcReader::AdcReader(int const num_channels)
-  : num_channels_{num_channels}
+AdcReader::AdcReader(std::vector<AdcGpioPin> const& input_pins)
+  : channels_{pins_to_channels(input_pins)}
 {
-  assert(num_channels_ >= 0);
-  assert(num_channels_ <= s_channels.size());
-
   adc1_config_width(width);
 
-  for (int i = 0; i < num_channels_; ++i)
+  for (auto const channel : channels_)
   {
-    adc1_channel_t const channel{s_channels[i]};
     adc1_config_channel_atten(channel, atten);
   }
 
@@ -91,11 +111,11 @@ AdcReader::AdcReader(int const num_channels)
 std::vector<std::uint32_t>
 AdcReader::getReadings(int const num_avg_samples)
 {
-  std::vector<std::uint32_t> result(num_channels_, 0U);
+  std::vector<std::uint32_t> result(channels_.size(), 0U);
 
-  for (int channel_ix = 0; channel_ix < num_channels_; ++channel_ix)
+  for (std::size_t channel_ix = 0; channel_ix < channels_.size(); ++channel_ix)
   {
-    adc1_channel_t const channel{s_channels[channel_ix]};
+    adc1_channel_t const channel{channels_[channel_ix]};
     std::uint32_t adc_reading{0};
     // Multisampling
     for (int i = 0; i < num_avg_samples; i++)
