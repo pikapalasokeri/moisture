@@ -4,6 +4,8 @@ from moisture_reading import MoistureReading
 
 
 class ElasticMoistureDb:
+    max_num_readings = 10000
+
     def __init__(self, local=False):
         if local:
             self._es = Elasticsearch()
@@ -68,7 +70,7 @@ class ElasticMoistureDb:
             "sensor_id",
             "location",
         ]
-        res = self._es.search(index=self._index, query=query, fields=fields, size=1000)
+        res = self._es.search(index=self._index, query=query, fields=fields, size=self.max_num_readings)
         return [MoistureReading.fromElastic(h["fields"]) for h in res["hits"]["hits"]]
 
 
