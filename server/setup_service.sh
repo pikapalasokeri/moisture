@@ -1,9 +1,12 @@
 #!/bin/bash
 
-# User and shit.
-sudo adduser --disabled-password --disabled-login --gecos "" moisture_man
-sudo groupadd docker
-sudo usermod -aG docker moisture_man
+id -u moisture_man &> /dev/null
+if [[ $? == 1 ]]; then
+    # User and shit.
+    sudo adduser --disabled-password --disabled-login --gecos "" moisture_man
+    sudo groupadd docker
+    sudo usermod -aG docker moisture_man
+fi
 
 # Paths and shit.
 # Absolute path to this script. /home/user/bar/foo.sh
