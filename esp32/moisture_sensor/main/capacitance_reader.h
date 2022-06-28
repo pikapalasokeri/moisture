@@ -10,7 +10,7 @@
 class CapacitanceReader
 {
 public:
-  CapacitanceReader(int const num_sensors);
+  CapacitanceReader();
 
   std::vector<std::uint32_t> getReadings();
 

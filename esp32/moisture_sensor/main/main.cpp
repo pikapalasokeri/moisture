@@ -23,8 +23,9 @@ app_main(void)
   ESP_ERROR_CHECK(ret);
 
 
-  CapacitanceReader cap_reader{2};
+  CapacitanceReader cap_reader{};
   std::vector<std::uint32_t> const values{cap_reader.getReadings()};
+  ESP_LOGI(TAG, "Read %d\n", values.front());
 
   wifiStaInit();
 
@@ -37,7 +38,7 @@ app_main(void)
   wifiStaDeinit();
 
   // constexpr int deep_sleep_sec = 3600;
-  constexpr int deep_sleep_sec = 5;
+  constexpr int deep_sleep_sec = 295;
   ESP_LOGI(TAG, "Entering deep sleep for %d seconds", deep_sleep_sec);
   esp_deep_sleep(1000000LL * deep_sleep_sec);
 }
