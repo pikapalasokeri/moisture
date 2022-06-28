@@ -20,7 +20,7 @@ PwmController::PwmController(std::vector<int> const& gpio_pins)
   ledc_timer_config_t ledc_timer;
   std::memset(&ledc_timer, 0, sizeof(ledc_timer));
   ledc_timer.duty_resolution = LEDC_TIMER_1_BIT; // resolution of PWM duty
-  ledc_timer.freq_hz = 200000;                   // frequency of PWM signal
+  ledc_timer.freq_hz = 800000;                   // frequency of PWM signal
   ledc_timer.speed_mode = LEDC_LOW_SPEED_MODE;   // timer mode
   ledc_timer.timer_num = LEDC_TIMER_1;           // timer index
   ledc_timer.clk_cfg = LEDC_AUTO_CLK;            // Auto select the source clock
