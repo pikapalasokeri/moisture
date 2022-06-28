@@ -2,11 +2,14 @@
 
 #include "driver/adc.h"
 #include "driver/gpio.h"
+#include "esp_log.h"
 
 #include <array>
 
 namespace
 {
+const char* TAG = "adc_reader";
+
 #define DEFAULT_VREF 1100
 
 // [...]  ADC1 (8 channels, attached to GPIOs 32 - 39) [...]
@@ -47,7 +50,7 @@ pins_to_channels(std::vector<AdcGpioPin> const& pins)
 }
 
 constexpr adc_bits_width_t width = ADC_WIDTH_BIT_12;
-constexpr adc_atten_t atten = ADC_ATTEN_DB_0;
+constexpr adc_atten_t atten = ADC_ATTEN_DB_11;
 constexpr adc_unit_t unit = ADC_UNIT_1;
 
 void
@@ -113,14 +116,16 @@ AdcReader::getReadings(int const num_avg_samples)
 {
   std::vector<std::uint32_t> result(channels_.size(), 0U);
 
-  for (std::size_t channel_ix = 0; channel_ix < channels_.size(); ++channel_ix)
+  for (std::size_t channel_ix{0U}; channel_ix < channels_.size(); ++channel_ix)
   {
     adc1_channel_t const channel{channels_[channel_ix]};
-    std::uint32_t adc_reading{0};
+    std::uint32_t adc_reading{0U};
     // Multisampling
     for (int i = 0; i < num_avg_samples; i++)
     {
-      adc_reading += adc1_get_raw(channel);
+      auto const tmp = adc1_get_raw(channel);
+      ESP_LOGI(TAG, "adc1_get_raw %d\n", int(tmp));
+      adc_reading += tmp;
     }
     adc_reading /= num_avg_samples;
 
