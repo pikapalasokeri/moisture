@@ -38,7 +38,7 @@ app_main(void)
   wifiStaDeinit();
 
   // constexpr int deep_sleep_sec = 3600;
-  constexpr int deep_sleep_sec = 295;
+  constexpr int deep_sleep_sec = 290;
   ESP_LOGI(TAG, "Entering deep sleep for %d seconds", deep_sleep_sec);
   esp_deep_sleep(1000000LL * deep_sleep_sec);
 }

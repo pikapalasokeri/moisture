@@ -14,7 +14,7 @@ CapacitanceReader::getReadings()
 {
   auto activity{pwm_controller_.getScopedActivity()};
 
-  constexpr int millis{5000};
+  constexpr int millis{10000};
   std::this_thread::sleep_for(std::chrono::milliseconds(millis));
 
   constexpr int num_samples{64};
