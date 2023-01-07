@@ -3,6 +3,7 @@
 from flask import Flask, Response, make_response
 import io
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+import matplotlib.pyplot as plt
 import elastic, time_utils, plot_generation
 from datetime import timedelta
 from threading import Lock
@@ -23,6 +24,7 @@ def plot_png(location):
 
         output = io.BytesIO()
         FigureCanvas(fig).print_png(output)
+        plt.close(fig)
         return Response(output.getvalue(), mimetype="image/png")
     except Exception as e:
         print(e)
