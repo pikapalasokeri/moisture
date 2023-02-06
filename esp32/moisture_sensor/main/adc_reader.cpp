@@ -124,7 +124,7 @@ AdcReader::getReadings(int const num_avg_samples)
     for (int i = 0; i < num_avg_samples; i++)
     {
       auto const tmp = adc1_get_raw(channel);
-      ESP_LOGI(TAG, "adc1_get_raw %d\n", int(tmp));
+      //ESP_LOGI(TAG, "adc1_get_raw %d\n", int(tmp));
       adc_reading += tmp;
     }
     adc_reading /= num_avg_samples;

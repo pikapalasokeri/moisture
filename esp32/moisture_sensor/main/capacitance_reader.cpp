@@ -12,11 +12,12 @@ CapacitanceReader::CapacitanceReader()
 std::vector<std::uint32_t>
 CapacitanceReader::getReadings()
 {
+  constexpr int num_samples{64};
+  constexpr int millis{3000};
+
   auto activity{pwm_controller_.getScopedActivity()};
 
-  constexpr int millis{10000};
   std::this_thread::sleep_for(std::chrono::milliseconds(millis));
 
-  constexpr int num_samples{64};
   return adc_reader_.getReadings(num_samples);
 }
