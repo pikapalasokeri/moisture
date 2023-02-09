@@ -102,31 +102,4 @@ PwmController::stop()
       printf("Unable to stop ledc channel %d: %d.", i, err2);
     }
   }
-
-  for (std::size_t i = 0; i < stop_channel_configs_.size(); ++i)
-  {
-    auto const& config = stop_channel_configs_[i];
-
-    gpio_config_t gpio_conf;
-    gpio_conf.pin_bit_mask = (1U << config.gpio_num);
-    gpio_conf.mode         = GPIO_MODE_OUTPUT;
-    gpio_conf.pull_up_en   = GPIO_PULLUP_DISABLE;
-    gpio_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
-    gpio_conf.intr_type    = GPIO_INTR_DISABLE;
-    {
-      esp_err_t const err{gpio_config(&gpio_conf)};
-      if (err != ESP_OK)
-      {
-        printf("Unable to config gpio as output for channel %d: %d.", i, err);
-      }
-    }
-    {
-      esp_err_t const err{gpio_set_level(static_cast<gpio_num_t>(config.gpio_num), 0U)};
-      if (err != ESP_OK)
-      {
-        printf("Unable to set gpio output low for channel %d: %d.", i, err);
-      }
-    }
-    gpio_deep_sleep_hold_en();
-  }
 }
