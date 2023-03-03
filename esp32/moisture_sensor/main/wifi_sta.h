@@ -15,4 +15,7 @@ wifiStaDeinit();
 std::string
 wifiGetSSID();
 
+std::int8_t
+wifiGetRSSI();
+
 #endif // WIFI_STA_H

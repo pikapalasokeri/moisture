@@ -220,3 +220,18 @@ wifiGetSSID()
   }
   return ret;
 }
+
+std::int8_t
+wifiGetRSSI()
+{
+  wifi_ap_record_t ap_info;
+  esp_err_t const err{esp_wifi_sta_get_ap_info(&ap_info)};
+  if (err == ESP_OK)
+  {
+    return ap_info.rssi;
+  }
+  else
+  {
+    return 0;
+  }
+}

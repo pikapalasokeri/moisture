@@ -130,16 +130,37 @@ post_http(std::uint32_t const raw_value,
   bool ret{false};
   HttpClient http_client{"http://pikapalasokeri.se:8080/new_moisture_reading"};
 
-  std::stringstream ss;
-
   std::string const mac_address{getFormattedMacAddress()};
 
+  std::stringstream ss;
   // clang-format off
   ss << "{\"raw_value\":" << raw_value << ","
      <<  "\"sensor_id\":\"" << mac_address << " - "<< sensor_id << "\","
      <<  "\"location\":\"" << location << "\","
      <<  "\"sensor_type\":\"moisture\","
      <<  "\"hash\":" << 0
+     << "}";
+  // clang-format on
+  std::string const post_data(ss.str());
+  ESP_LOGI(TAG, "%s", post_data.c_str());
+  http_client.post(post_data);
+
+  return ret;
+}
+
+bool
+post_http_ping(std::int8_t const rssi, std::string const location)
+{
+  bool ret{false};
+  HttpClient http_client{"http://pikapalasokeri.se:8080/ping"};
+
+  std::string const mac_address{getFormattedMacAddress()};
+
+  std::stringstream ss;
+  // clang-format off
+  ss << "{\"id\":\"" << mac_address << "\","
+     <<  "\"rssi\":" << std::int32_t(rssi) << ","
+     <<  "\"location\":\"" << location << "\""
      << "}";
   // clang-format on
   std::string const post_data(ss.str());

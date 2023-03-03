@@ -7,6 +7,7 @@
 #include "capacitance_reader.h"
 #include "post_http.h"
 #include "wifi_sta.h"
+#include "mode_checker.h"
 
 const char* TAG = "main";
 
@@ -22,23 +23,34 @@ app_main(void)
   }
   ESP_ERROR_CHECK(ret);
 
+  int deep_sleep_sec = 3600;
 
-  CapacitanceReader cap_reader{};
-  std::vector<std::uint32_t> const values{cap_reader.getReadings()};
-  ESP_LOGI(TAG, "Read %d\n", values.front());
-
-  wifiStaInit();
-
-  for (int i = 0; i < values.size(); ++i)
+  Mode const mode{getMode()};
+  if (mode == Mode::MoistureReading)
   {
-    auto const v{values[i]};
-    post_http(v, i, wifiGetSSID());
+    CapacitanceReader cap_reader{};
+    std::vector<std::uint32_t> const values{cap_reader.getReadings()};
+    ESP_LOGI(TAG, "Read %d\n", values.front());
+
+    wifiStaInit();
+
+    for (int i = 0; i < values.size(); ++i)
+    {
+      auto const v{values[i]};
+      post_http(v, i, wifiGetSSID());
+    }
+
+    wifiStaDeinit();
+
+  }
+  else
+  {
+    wifiStaInit();
+    post_http_ping(wifiGetRSSI(), wifiGetSSID());
+    wifiStaDeinit();
+    deep_sleep_sec = 5;
   }
 
-  wifiStaDeinit();
-
-  constexpr int deep_sleep_sec = 3600;
-  //constexpr int deep_sleep_sec = 290;
   ESP_LOGI(TAG, "Entering deep sleep for %d seconds", deep_sleep_sec);
   esp_deep_sleep(1000000LL * deep_sleep_sec);
 }

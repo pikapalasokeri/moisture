@@ -8,4 +8,7 @@ bool post_http(std::uint32_t const raw_value,
                int const sensor_id,
                std::string const location);
 
+bool post_http_ping(std::int8_t const rssi, std::string const location);
+
+
 #endif // POST_HTTP_

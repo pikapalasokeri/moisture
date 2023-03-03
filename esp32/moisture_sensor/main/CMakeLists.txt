@@ -3,6 +3,7 @@ idf_component_register(
   "main.cpp"
   "adc_reader.cpp"
   "capacitance_reader.cpp"
+  "mode_checker.cpp"
   "post_http.cpp"
   "pwm_controller.cpp"
   "wifi_sta.cpp"
