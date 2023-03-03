@@ -36,7 +36,7 @@ def is_valid(req):
 
 
 @app.route("/new_moisture_reading", methods=["POST"])
-def index():
+def new_moisture_reading():
     request_data = request.get_json()
     print(request_data)
 
@@ -55,7 +55,7 @@ def index():
 
 
 @app.route("/ping", methods=["POST"])
-def index():
+def ping():
     request_data = request.get_json()
     print(request_data)
 
