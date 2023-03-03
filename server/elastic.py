@@ -12,6 +12,7 @@ class ElasticMoistureDb:
         else:
             self._es = Elasticsearch(["elasticsearch"])
         self._index = "test-index7"
+        self._index_ping = "ping"
 
     def create_index(self):
         settings = {
@@ -28,6 +29,24 @@ class ElasticMoistureDb:
 
         try:
             self._es.indices.create(index=self._index, body=settings)
+            created = True
+        except:
+            created = False
+        return created
+
+    def create_index_ping(self):
+        settings = {
+            "mappings": {
+                "properties": {
+                    "timestamp": {"type": "date"},
+                    "location": {"type": "keyword"},
+                    "rssi": {"type": "integer"},
+                }
+            }
+        }
+
+        try:
+            self._es.indices.create(index=self._index_ping, body=settings)
             created = True
         except:
             created = False
@@ -106,3 +125,31 @@ class ElasticMoistureDb:
         }
         res = self._es.index(self._index, body=doc, refresh=True)
         return res["result"] == "created"
+
+    def add_ping(self, rssi, location, datetime_utc):
+        doc = {
+            "rssi": rssi,
+            "location": location,
+            "timestamp": datetime_utc,
+        }
+        res = self._es.index(self._index_ping, body=doc, refresh=True)
+        return res["result"] == "created"
+
+    def get_latest_ping(self, location):
+        es = Elasticsearch()
+        query = {
+            "bool": {
+                "must": {"term": {"location": location}},
+            },
+        }
+        fields = [
+            "location",
+            "timestamp",
+            "rssi",
+        ]
+        res = self._es.search(index=self._index_ping,
+                              query=query,
+                              fields=fields,
+                              size=1,
+                              sort={"timestamp":"desc"})
+        return dict([(k, v[0]) for k,v in res["hits"]["hits"][0]["fields"].items()])

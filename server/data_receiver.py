@@ -54,6 +54,22 @@ def index():
     return {"result": "success"}
 
 
+@app.route("/ping", methods=["POST"])
+def index():
+    request_data = request.get_json()
+    print(request_data)
+
+    es = elastic.ElasticMoistureDb()
+    es.add_ping(
+        request_data["rssi"],
+        request_data["location"],
+        time_utils.now_utc(),
+        )
+    print("Successfully added ping from:", request_data)
+
+    return {"result": "success"}
+
+
 if __name__ == "__main__":
     from waitress import serve
 
