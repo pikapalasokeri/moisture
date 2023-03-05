@@ -8,8 +8,6 @@ def generate_plot(es, start_datetime, end_datetime, location):
     try:
         fig, ax = plt.subplots()
 
-        ax.set_title(f"{time_utils.local(time_utils.now_utc())}")
-
         readings = es.get_readings(start_datetime, end_datetime)
 
         has_plotted = False
@@ -18,19 +16,20 @@ def generate_plot(es, start_datetime, end_datetime, location):
         sensors = es.get_sensors(location)
         print("sensors:", sensors)
         series = {sensor_id: ([], []) for sensor_id in sensors}
-        print("series:", series)
+        #print("series:", series)
         for r in readings:
             if r.sensor_id in sensors and r.location == location:
-                print("Got reading:", r)
+                #print("Got reading:", r)
                 series[r.sensor_id][0].append(time_utils.local(r.timestamp))
                 series[r.sensor_id][1].append(r.raw_value)
 
         for sensor_id, serie in series.items():
-            print(sensor_id, serie)
+            #print(sensor_id, serie)
             if serie[0]:
-                timestamps, values = zip(*sorted(zip(serie[0], serie[1])))
+                timestamps = serie[0]
+                values = serie[1]
                 ax.plot(timestamps, values, ".-", label=f"{location}/{sensor_id}")
-                print("Plotted serie:", location, sensor_id)
+                print(f"Plotted serie: {location}, {sensor_id}, with {len(timestamps)} data points.")
                 has_plotted = True
 
         if not has_plotted:
@@ -47,10 +46,10 @@ def generate_plot(es, start_datetime, end_datetime, location):
             "%Y-%m-%d %H:%M", tz=pytz.timezone("Europe/Stockholm")
         )
         ax.xaxis.set_major_formatter(formatter)
-
         ax.tick_params(axis="x", rotation=90)
         ax.legend()
         ax.grid()
+        ax.set_title(f"{time_utils.local(time_utils.now_utc())}")
         fig.tight_layout()
         return fig, ax
     except:

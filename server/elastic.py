@@ -52,7 +52,7 @@ class ElasticMoistureDb:
             created = False
         return created
 
-    def get_readings(self, datetime_start=None, datetime_end=None):
+    def get_readings(self, datetime_start=None, datetime_end=None, max_num_readings_override=None):
         start_str = "1900-01-01"
         end_str = "2100-01-01"
         start_str = (
@@ -89,7 +89,9 @@ class ElasticMoistureDb:
             "sensor_id",
             "location",
         ]
-        res = self._es.search(index=self._index, query=query, fields=fields, size=self.max_num_readings)
+
+        max_num_readings = self.max_num_readings if max_num_readings_override is None else max_num_readings_override
+        res = self._es.search(index=self._index, query=query, fields=fields, size=max_num_readings, sort={"timestamp":"desc"})
         return [MoistureReading.fromElastic(h["fields"]) for h in res["hits"]["hits"]]
 
 

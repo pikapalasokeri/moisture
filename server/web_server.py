@@ -37,6 +37,14 @@ def plot_png(location):
 def specific_location(location):
     print("location", location)
     html = f'<img src="/{location}/plot.png" alt="Moisture readings">'
+    html += "<br>"*3
+
+    es = elastic.ElasticMoistureDb()
+    latest_ping = es.get_latest_ping(location)
+    html += f"Latest ping: {time_utils.from_string(latest_ping['timestamp'])}, {latest_ping['rssi']}<br>"
+    latest_reading = es.get_readings(max_num_readings_override=1)[0]
+    html += f"Latest reading: {latest_reading.timestamp}, {latest_reading.sensor_id}, {latest_reading.raw_value}"
+
     response = make_response(html)
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     response.headers["Pragma"] = "no-cache"
