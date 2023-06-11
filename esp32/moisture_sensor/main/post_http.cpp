@@ -76,7 +76,7 @@ public:
     std::memset(&config_, 0, sizeof(config_));
     config_.event_handler = handleHttpEvent;
     config_.url = url_;
-    config_.timeout_ms = 5000;
+    config_.timeout_ms = 7500;
     client_ = esp_http_client_init(&config_);
   }
 
@@ -125,10 +125,10 @@ private:
 bool
 post_http(std::uint32_t const raw_value,
           int const sensor_id,
-          std::string const location)
+          std::string const location,
+          std::int32_t const attempts)
 {
   bool ret{false};
-  HttpClient http_client{"http://pikapalasokeri.se:8080/new_moisture_reading"};
 
   std::string const mac_address{getFormattedMacAddress()};
 
@@ -143,7 +143,17 @@ post_http(std::uint32_t const raw_value,
   // clang-format on
   std::string const post_data(ss.str());
   ESP_LOGI(TAG, "%s", post_data.c_str());
-  http_client.post(post_data);
+
+  for (std::int32_t i{0}; i < attempts; ++i)
+  {
+    ESP_LOGI(TAG, "Post attempt %d", i);
+    HttpClient http_client{"http://pikapalasokeri.se:8080/new_moisture_reading"};
+    bool const success{http_client.post(post_data)};
+    if (success)
+    {
+      break;
+    }
+  }
 
   return ret;
 }

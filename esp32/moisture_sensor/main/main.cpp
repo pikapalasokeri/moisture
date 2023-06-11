@@ -37,7 +37,8 @@ app_main(void)
     for (int i = 0; i < values.size(); ++i)
     {
       auto const v{values[i]};
-      post_http(v, i, wifiGetSSID());
+      constexpr std::int32_t attempts{5};
+      post_http(v, i, wifiGetSSID(), attempts);
     }
 
     wifiStaDeinit();
