@@ -14,7 +14,7 @@ const char* TAG = "mode_checker";
 
 Mode getMode()
 {
-  constexpr gpio_num_t pin{GPIO_NUM_23};
+  constexpr gpio_num_t pin{GPIO_NUM_21};
 
   gpio_reset_pin(pin);
 

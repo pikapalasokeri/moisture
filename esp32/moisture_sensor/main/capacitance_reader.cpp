@@ -4,8 +4,8 @@
 #include <thread>
 
 CapacitanceReader::CapacitanceReader()
-  : adc_reader_{std::vector<AdcGpioPin>{AdcGpioPin::GPIO35}}
-  , pwm_controller_{std::vector<int>{21}}
+  : adc_reader_{std::vector<AdcGpioPin>{AdcGpioPin::GPIO34, AdcGpioPin::GPIO35}}
+  , pwm_controller_{std::vector<int>{22, 23}}
 {
 }
 
